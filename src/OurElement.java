@@ -2,16 +2,15 @@
  * @author Irene Petrova
  */
 public class OurElement implements Element {
-    public void setNextAlienPos(int nextAlienPos) {
+    public void setNextAlienPos(int[] nextAlienPos) {
         this.nextAlienPos = nextAlienPos;
     }
 
-    private int nextAlienPos; //позиция следующего чужого элемента
+    private int[] nextAlienPos; //позиция следующего чужого элемента
     private int value;
 
-    public OurElement(int value, int nextAlienPos) {
+    public OurElement(int value) {
         this.value = value;
-        this.nextAlienPos = nextAlienPos;
     }
 
     @Override
@@ -24,7 +23,7 @@ public class OurElement implements Element {
         return value;
     }
 
-    public int getNextAlienPos() {
+    public int[] getNextAlienPos() {
         return nextAlienPos;
     }
 }
