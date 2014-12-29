@@ -1,17 +1,17 @@
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Irene Petrova
  */
 public class Entry {
-    private List<Element> elements;
-    private List<Entry> parent;
+    public List<Element> elements;
+    public List<Entry> parent;
     private int p; //добавляется каждый p-й чужой элемент в список
+    public final int index;
 
     //для последнего списка, в который не добавляется чужих
-    private Entry(List<Integer> elements, int p) {
+    public Entry(List<Integer> elements, int p, int index) {
+        this.index = index;
         this.elements = new ArrayList<>();
         for (Integer elem : elements) {
             this.elements.add(new OurElement(elem));
@@ -20,7 +20,8 @@ public class Entry {
         parent = null;
     }
 
-    private Entry(List<Integer> elements, int p, List<Entry> parent) {
+    public Entry(List<Integer> elements, int p, List<Entry> parent, int index) {
+        this.index = index;
         this.elements = new ArrayList<>();
         this.p = p;
         this.parent = parent;
@@ -87,14 +88,14 @@ public class Entry {
         if (data.size() == 0) {
             return null;
         }
-        Entry cur = new Entry(data.get(data.size() - 1), p);
+        Entry cur = new Entry(data.get(data.size() - 1), p, data.size() - 1);
         for (int i = data.size() - 2; i >= 0; --i) {
-            cur = new Entry(data.get(i), p, Arrays.asList(cur));
+            cur = new Entry(data.get(i), p, Arrays.asList(cur), i);
         }
         return cur;
     }
 
-    private int posInNext(int posInCur, int x, int parentIndex) {
+    public int posInNext(int posInCur, int x, int parentIndex) {
         int posInParent;
         if (posInCur == -1) {
             posInParent = parent.get(parentIndex).elements.size() - 1;
@@ -121,7 +122,7 @@ public class Entry {
         return parent.get(parentIndex).elements.get(posInParent).getValue() >= x ? posInParent : -1;
     }
 
-    private Integer getRes(Entry cur, int posInParent) {
+    public static Integer getRes(Entry cur, int posInParent) {
         Element resInParent = cur.elements.get(posInParent);
         if (resInParent.isAlien()) {
             AlienElement res = (AlienElement) resInParent;
@@ -134,8 +135,8 @@ public class Entry {
             return cur.elements.get(posInParent).getValue();
         }
     }
-    public List<Integer> search(int x) {
-        List<Integer> answer = new ArrayList<>();
+
+    public int binSearch(int x) {
         int l = -1;
         int r = elements.size();
         while (l < r - 1) {
@@ -146,24 +147,31 @@ public class Entry {
                 r = m;
             }
         }
+        return r;
+    }
+
+    public Answer search(int x, Selector selector) {
+        Answer answer = new Answer();
         Entry cur = this;
-        int curPos = r;
-        if (r == elements.size()) {
-            answer.add(-1);
+        int curPos = binSearch(x);
+        if (curPos == elements.size()) {
+            answer.add(cur.index, -1);
             curPos = -1;
         } else {
-            answer.add(getRes(cur, r));
+            answer.add(cur.index, getRes(cur, curPos));
         }
         while (cur.parent != null) {
-            int parentIndex = 0;
+            int parentIndex = selector.selectNext(x, cur);
             curPos = cur.posInNext(curPos, x, parentIndex);
             cur = cur.parent.get(parentIndex);
             if (curPos == -1) {
-                answer.add(-1);
+                answer.add(cur.index, -1);
             } else {
-                answer.add(getRes(cur, curPos));
+                answer.add(cur.index, getRes(cur, curPos));
             }
         }
         return answer;
     }
+
+
 }

@@ -1,6 +1,4 @@
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Irene Petrova
@@ -29,33 +27,40 @@ public class BoundedGraph {
         }
     }
 
-    private void dfs(int u, boolean[] colored, Entry[] cascade) {
+    private void dfs(int u, boolean[] colored, Entry[] cascade, int p) {
         colored[u] = true;
         for (Edge e : rightOrder.get(u)) {
             if (!colored[e.end]) {
-                dfs(e.end, colored, cascade);
+                dfs(e.end, colored, cascade, p);
             }
         }
-     //   cascade[u] = new Entry();
+        if (inversedOrder.get(u).isEmpty()) {
+            cascade[u] = new Entry(values.get(u), p, u);
+        } else {
+            List<Entry> parents = new ArrayList<>();
+            for (Edge e : inversedOrder.get(u)) {
+                parents.add(cascade[e.end]);
+            }
+            cascade[u] = new Entry(values.get(u), p, parents, u);
+        }
 
     }
-    private List<Entry> createCascade() {
+    private Entry[] createCascade(int p) {
         boolean[] colored = new boolean[values.size()];
         Arrays.fill(colored, false);
         Entry[] cascade = new Entry[values.size()];
-        dfs(0, colored, cascade);
-        return null;
+        dfs(0, colored, cascade, p);
+        return cascade;
     }
 
-    private class Edge {
-        private Integer end;
-        private Integer lowerBound;
-        private Integer higherBound;
-
-        private Edge(Integer end, Integer lowerBound, Integer higherBound) {
-            this.end = end;
-            this.lowerBound = lowerBound;
-            this.higherBound = higherBound;
-        }
+    public Edge getInversedEdge(int curIndex, int curParentIndex) {
+        return inversedOrder.get(curIndex).get(curParentIndex);
     }
+
+    public Answer search(int x, int start, Entry[] cascade, Selector selector) {
+        Entry startEntry = cascade[start];
+        return startEntry.search(x, selector);
+    }
+
+
 }

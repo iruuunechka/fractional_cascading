@@ -16,11 +16,12 @@ public class EntryTest {
         );
         int p = 2;
         Entry cascade = Entry.createCascade(data, p);
-        assertEquals(Arrays.asList(2, 1, 8, 12), cascade.search(0));
-        assertEquals(Arrays.asList(-1, -1, 11, 12), cascade.search(11));
-        assertEquals(Arrays.asList(-1, -1, 11, 12), cascade.search(11));
-        assertEquals(Arrays.asList(4, 3, 8, 12), cascade.search(3));
-        assertEquals(Arrays.asList(7, -1, 8, 12), cascade.search(7));
-        assertEquals(Arrays.asList(-1, -1, -1, -1), cascade.search(100));
+        Selector listSelector = new ListSelector();
+        assertEquals(Arrays.asList(2, 1, 8, 12), cascade.search(0, listSelector).getAns());
+        assertEquals(Arrays.asList(-1, -1, 11, 12), cascade.search(11, listSelector).getAns());
+        assertEquals(Arrays.asList(-1, -1, 11, 12), cascade.search(11, listSelector).getAns());
+        assertEquals(Arrays.asList(4, 3, 8, 12), cascade.search(3, listSelector).getAns());
+        assertEquals(Arrays.asList(7, -1, 8, 12), cascade.search(7, listSelector).getAns());
+        assertEquals(Arrays.asList(-1, -1, -1, -1), cascade.search(100, listSelector).getAns());
     }
 }
