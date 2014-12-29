@@ -38,18 +38,18 @@ public class Entry {
         Arrays.fill(elementsInParentFinished, false);
         int nonFinishedElements = parent.size() + 1;
         while (nonFinishedElements > 0) {
-            Integer minInParent = curInParent.get(0);
-            int parentWithMin = 0;
-            for (int i = 1; i < parent.size(); ++i) {
+            Integer minInParent = null;
+            int parentWithMin = -1;
+            for (int i = 0; i < parent.size(); ++i) {
                 if (elementsInParentFinished[i]) {
                     continue;
                 }
-                if (curInParent.get(i) < minInParent) {
+                if (minInParent == null || curInParent.get(i) < minInParent) {
                     minInParent = curInParent.get(i);
                     parentWithMin = i;
                 }
             }
-            if ((!elementsFinished) && curInElements <= minInParent) {
+            if ((!elementsFinished) && (minInParent == null || curInElements <= minInParent)) {
                 this.elements.add(new OurElement(curInElements));
                 posInElements++;
                 if (posInElements >= elements.size()) {
@@ -59,8 +59,9 @@ public class Entry {
                 }
                 curInElements = elements.get(posInElements);
             } else {
+                //noinspection ConstantConditions
                 this.elements.add(new AlienElement(posInParent[parentWithMin], minInParent, parentWithMin));
-                posInParent[parentWithMin] +=p;
+                posInParent[parentWithMin] += parent.get(parentWithMin).p;
                 if (posInParent[parentWithMin] >= parent.get(parentWithMin).elements.size()) {
                     elementsInParentFinished[parentWithMin] = true;
                     nonFinishedElements--;
@@ -70,16 +71,17 @@ public class Entry {
             }
         }
         int lastOur = -1;
-        int lastAlien = -1;
+        int[] lastAlien = new int[parent.size()];
+        Arrays.fill(lastAlien, -1);
         for (int i = this.elements.size() - 1; i >= 0; --i) {
             if (this.elements.get(i).isAlien()) {
-                lastAlien = i;
                 AlienElement ae = (AlienElement) this.elements.get(i);
                 ae.setNextOurPos(lastOur);
+                lastAlien[ae.getOwnerIndex()] = i;
             } else {
                 lastOur = i;
                 OurElement oe = (OurElement) this.elements.get(i);
-                oe.setNextAlienPos(new int[]{lastAlien});
+                oe.setNextAlienPos(Arrays.copyOf(lastAlien, lastAlien.length));
             }
         }
     }
@@ -95,10 +97,11 @@ public class Entry {
         return cur;
     }
 
+
     public int posInNext(int posInCur, int x, int parentIndex) {
         int posInParent;
         if (posInCur == -1) {
-            posInParent = parent.get(parentIndex).elements.size() - 1;
+            posInParent = parent.get(parentIndex).elements.size();
         } else {
             if (elements.get(posInCur).isAlien()) {                    //найденный в текущем списке чужой
                 AlienElement elementInAlien = (AlienElement) elements.get(posInCur);
@@ -114,12 +117,12 @@ public class Entry {
                 }
             }
         }
-        for (int i = posInParent; i >= Math.max(0, posInParent - p); --i) {
+        for (int i = posInParent - 1; i > Math.max(-1, posInParent - parent.get(parentIndex).p); --i) {
             if (parent.get(parentIndex).elements.get(i).getValue() >= x) {
                 posInParent = i;
             }
         }
-        return parent.get(parentIndex).elements.get(posInParent).getValue() >= x ? posInParent : -1;
+        return posInParent < parent.get(parentIndex).elements.size() ? posInParent : -1;
     }
 
     public static Integer getRes(Entry cur, int posInParent) {
@@ -128,7 +131,7 @@ public class Entry {
             AlienElement res = (AlienElement) resInParent;
             int resPos = res.getNextOurPos();
             if (resPos == -1) {
-                return -1;
+                return null;
             }
             return cur.elements.get(resPos).getValue();
         } else {
@@ -155,17 +158,24 @@ public class Entry {
         Entry cur = this;
         int curPos = binSearch(x);
         if (curPos == elements.size()) {
-            answer.add(cur.index, -1);
+            answer.add(cur.index, null);
             curPos = -1;
         } else {
             answer.add(cur.index, getRes(cur, curPos));
         }
         while (cur.parent != null) {
-            int parentIndex = selector.selectNext(x, cur);
+            Integer parentIndex;
+            if (curPos != -1 && elements.get(curPos).isAlien()) {
+                parentIndex = ((AlienElement)elements.get(curPos)).getOwnerIndex();
+            } else {
+                parentIndex = selector.selectNext(x, cur);
+                if (parentIndex == null)
+                    break;
+            }
             curPos = cur.posInNext(curPos, x, parentIndex);
             cur = cur.parent.get(parentIndex);
             if (curPos == -1) {
-                answer.add(cur.index, -1);
+                answer.add(cur.index, null);
             } else {
                 answer.add(cur.index, getRes(cur, curPos));
             }

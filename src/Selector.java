@@ -8,5 +8,5 @@ public interface Selector {
      * @param cur -- the current entry
      * @return -- the index of the next list
      */
-    public int selectNext(int x, Entry cur);
+    public Integer selectNext(Integer x, Entry cur);
 }

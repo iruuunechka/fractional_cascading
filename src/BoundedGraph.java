@@ -15,6 +15,7 @@ public class BoundedGraph {
         this.values = values;
         rightOrder = new ArrayList<>();
         inversedOrder = new ArrayList<>();
+        //noinspection ForLoopReplaceableByForEach
         for (int i = 0; i < values.size(); ++i) {
             rightOrder.add(new ArrayList<Edge>());
             inversedOrder.add(new ArrayList<Edge>());
@@ -34,22 +35,27 @@ public class BoundedGraph {
                 dfs(e.end, colored, cascade, p);
             }
         }
-        if (inversedOrder.get(u).isEmpty()) {
+        if (rightOrder.get(u).isEmpty()) {
             cascade[u] = new Entry(values.get(u), p, u);
         } else {
             List<Entry> parents = new ArrayList<>();
-            for (Edge e : inversedOrder.get(u)) {
+            for (Edge e : rightOrder.get(u)) {
                 parents.add(cascade[e.end]);
             }
             cascade[u] = new Entry(values.get(u), p, parents, u);
         }
 
     }
-    private Entry[] createCascade(int p) {
+    public Entry[] createCascade(int p) {
         boolean[] colored = new boolean[values.size()];
         Arrays.fill(colored, false);
         Entry[] cascade = new Entry[values.size()];
         dfs(0, colored, cascade, p);
+        for (int i = 0; i < colored.length; ++i) {
+            if (!colored[i]) {
+                dfs(i, colored, cascade, p);
+            }
+        }
         return cascade;
     }
 

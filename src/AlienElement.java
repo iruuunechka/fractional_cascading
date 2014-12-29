@@ -8,13 +8,13 @@ public class AlienElement implements Element {
 
     private int nextOurPos; //позиция следующего элемента из текущего списка
     private int posInLocalList; //позиция в списке, откуда пришел
-    private int ownerIndex;
 
-    public void setOtherAlienPos(int[] otherAlienPos) {
-        this.otherAlienPos = otherAlienPos;
+    public int getOwnerIndex() {
+        return ownerIndex;
     }
 
-    private int[] otherAlienPos;
+    private int ownerIndex;
+
     private int value;
 
     public AlienElement(int posInLocalList, int value, int ownerIndex) {
