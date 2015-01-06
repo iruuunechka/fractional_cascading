@@ -108,9 +108,9 @@ public class Entry {
                 posInParent = elementInAlien.getPosInLocalList();
             } else {                                                   //найденный в текущем списке свой
                 OurElement elementInOur = (OurElement) elements.get(posInCur);
-                int nextAlienPos = elementInOur.getNextAlienPos()[0];
+                int nextAlienPos = elementInOur.getNextAlienPos()[parentIndex];
                 if (nextAlienPos == -1) {     //элемента не существует
-                    posInParent = -1;
+                    posInParent = parent.get(parentIndex).elements.size();
                 } else {
                     AlienElement elementInAlien = (AlienElement) elements.get(nextAlienPos);
                     posInParent = elementInAlien.getPosInLocalList();
@@ -165,8 +165,8 @@ public class Entry {
         }
         while (cur.parent != null) {
             Integer parentIndex;
-            if (curPos != -1 && elements.get(curPos).isAlien()) {
-                parentIndex = ((AlienElement)elements.get(curPos)).getOwnerIndex();
+            if (curPos != -1 && cur.elements.get(curPos).isAlien()) {
+                parentIndex = ((AlienElement)cur.elements.get(curPos)).getOwnerIndex();
             } else {
                 parentIndex = selector.selectNext(x, cur);
                 if (parentIndex == null)
