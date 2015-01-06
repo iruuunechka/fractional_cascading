@@ -4,14 +4,14 @@ package cascading.element;
  * Class for element from another list
  * @author Irene Petrova
  */
-public class AlienElement implements Element {
+public class AlienElement<T> implements Element<T> {
 
     private int nextOurPos; //позиция следующего элемента из текущего списка
     private int posInLocalList; //позиция в списке, откуда пришел
     private int ownerIndex; // каким является ребенком
-    private int value;
+    private T value;
 
-    public AlienElement(int posInLocalList, int value, int ownerIndex) {
+    public AlienElement(int posInLocalList, T value, int ownerIndex) {
         this.posInLocalList = posInLocalList;
         this.value = value;
         this.ownerIndex = ownerIndex;
@@ -23,7 +23,7 @@ public class AlienElement implements Element {
     }
 
     @Override
-    public Integer getValue() {
+    public T getValue() {
         return value;
     }
 

@@ -4,11 +4,11 @@ package cascading.element;
  * Class for element from this list
  * @author Irene Petrova
  */
-public class OurElement implements Element {
+public class OurElement<T> implements Element<T> {
     private int[] nextAlienPos; //позиция следующего чужого элемента
-    private int value;
+    private T value;
 
-    public OurElement(int value) {
+    public OurElement(T value) {
         this.value = value;
     }
 
@@ -18,7 +18,7 @@ public class OurElement implements Element {
     }
 
     @Override
-    public Integer getValue() {
+    public T getValue() {
         return value;
     }
 

@@ -8,10 +8,11 @@ import java.util.*;
  * Class for a graph with bounds
  * @author Irene Petrova
  */
-public class BoundedGraph {
-    private List<Map<Integer, Edge>> rightOrder;  //прямые ребра
-    private List<Map<Integer, Edge>> inversedOrder;   //инвертированные ребра
-    private List<List<Integer>> values;   //списки значений
+public class BoundedGraph<T> {
+    private List<Map<Integer, Edge<T>>> rightOrder;  //прямые ребра
+    private List<Map<Integer, Edge<T>>> inversedOrder;   //инвертированные ребра
+    private List<List<T>> values;   //списки значений
+    private Comparator<T> comparator;
 
     /**
      * Constructor for {@link cascading.BoundedGraph}
@@ -19,7 +20,8 @@ public class BoundedGraph {
      * @param edges -- edges of the graph
      * @param bounds -- bounds for edges
      */
-    public BoundedGraph(List<List<Integer>> values, List<List<Integer>> edges, List<List<Integer>> bounds) {
+    public BoundedGraph(List<List<T>> values, List<List<Integer>> edges, List<List<T>> bounds, Comparator<T> comparator) {
+        this.comparator = comparator;
         if (edges.size() != bounds.size()) {
             throw new AssertionError("Sizes of edges and bound must be equal");
         }
@@ -28,24 +30,25 @@ public class BoundedGraph {
         inversedOrder = new ArrayList<>();
         //noinspection ForLoopReplaceableByForEach
         for (int i = 0; i < values.size(); ++i) {
-            rightOrder.add(new HashMap<Integer, Edge>());
-            inversedOrder.add(new HashMap<Integer, Edge>());
+            rightOrder.add(new HashMap<>());
+            inversedOrder.add(new HashMap<>());
         }
         for (int i = 0; i < edges.size(); ++i) {
             int end = edges.get(i).get(1);
-            Edge newRightEdge = new Edge(end, bounds.get(i).get(0), bounds.get(i).get(1));
+            Edge<T> newRightEdge = new Edge<>(end, bounds.get(i).get(0), bounds.get(i).get(1));
             rightOrder.get(edges.get(i).get(0)).put(end, newRightEdge);
             end = edges.get(i).get(0);
-            Edge newInversedEdge = new Edge(end, bounds.get(i).get(0), bounds.get(i).get(1));
+            Edge<T> newInversedEdge = new Edge<>(end, bounds.get(i).get(0), bounds.get(i).get(1));
             inversedOrder.get(edges.get(i).get(1)).put(end, newInversedEdge);
         }
     }
 
-    public Edge getInversedEdge(int curIndex, int curParentIndex) {
+    public Edge<T> getInversedEdge(int curIndex, int curParentIndex) {
         return inversedOrder.get(curIndex).get(curParentIndex);
     }
 
-    public Edge getEdge(int curIndex, int parentIndex) {
+    @SuppressWarnings("UnusedDeclaration")
+    public Edge<T> getEdge(int curIndex, int parentIndex) {
         return rightOrder.get(curIndex).get(parentIndex);
     }
 
@@ -53,7 +56,7 @@ public class BoundedGraph {
         return inversedOrder.get(u).size() * 2;
     }
 
-    private void dfs(int u, boolean[] colored, Entry[] cascade) {
+    private void dfs(int u, boolean[] colored, Entry<T>[] cascade) {
         colored[u] = true;
         for (Edge e : rightOrder.get(u).values()) {
             if (!colored[e.end]) {
@@ -61,21 +64,22 @@ public class BoundedGraph {
             }
         }
         if (rightOrder.get(u).isEmpty()) {
-            cascade[u] = new Entry(values.get(u), getP(u), u);
+            cascade[u] = new Entry<>(values.get(u), getP(u), u, comparator);
         } else {
-            List<Entry> parents = new ArrayList<>();
+            List<Entry<T>> parents = new ArrayList<>();
             for (Edge e : rightOrder.get(u).values()) {
                 parents.add(cascade[e.end]);
             }
-            cascade[u] = new Entry(values.get(u), getP(u), parents, u);
+            cascade[u] = new Entry<>(values.get(u), getP(u), parents, u, comparator);
         }
 
     }
 
-    public Entry[] createCascade() {
+    public Entry<T>[] createCascade() {
         boolean[] colored = new boolean[values.size()];
         Arrays.fill(colored, false);
-        Entry[] cascade = new Entry[values.size()];
+        //noinspection unchecked
+        Entry<T>[] cascade = new Entry[values.size()];
         dfs(0, colored, cascade);
         for (int i = 0; i < colored.length; ++i) {
             if (!colored[i]) {
@@ -85,8 +89,8 @@ public class BoundedGraph {
         return cascade;
     }
 
-    public Answer search(int x, int start, Entry[] cascade, Selector selector) {
-        Entry startEntry = cascade[start];
+    public Answer search(T x, int start, Entry<T>[] cascade, Selector<T> selector) {
+        Entry<T> startEntry = cascade[start];
         return startEntry.search(x, selector);
     }
 }

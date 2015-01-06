@@ -11,33 +11,36 @@ import java.util.*;
  * Class for cascading entry
  * @author Irene Petrova
  */
-public class Entry {
-    public List<Element> elements; //список элементов
-    public List<Entry> parent;  //список тех, откуда каскадировали, для списков их всегда 1 (Это те, откуда попадали чужие элементы)
+public class Entry<T> {
+    public List<Element<T>> elements; //список элементов
+    public List<Entry<T>> parent;  //список тех, откуда каскадировали, для списков их всегда 1 (Это те, откуда попадали чужие элементы)
     private int p; //добавляется каждый p-й чужой элемент в список
     public final int index; //номер вершины, соответствующий данному Entry
+    private final Comparator<T> comparator; // Comparator для элементов типа T
 
     //для последнего списка, в который не добавляется чужих
-    public Entry(List<Integer> elements, int p, int index) {
+    public Entry(List<T> elements, int p, int index, Comparator<T> comparator) {
         this.index = index;
+        this.comparator = comparator;
         this.elements = new ArrayList<>();
-        for (Integer elem : elements) {
-            this.elements.add(new OurElement(elem));
+        for (T elem : elements) {
+            this.elements.add(new OurElement<>(elem));
         }
         this.p = p;
         parent = null;
     }
 
-    public Entry(List<Integer> elements, int p, List<Entry> parent, int index) {
+    public Entry(List<T> elements, int p, List<Entry<T>> parent, int index, Comparator<T> comparator) {
         this.index = index;
+        this.comparator = comparator;
         this.elements = new ArrayList<>();
         this.p = p;
         this.parent = parent;
         int posInElements = 0;
-        Integer curInElements = elements.get(posInElements);
+        T curInElements = elements.get(posInElements);
         int[] posInParent = new int[parent.size()];
         Arrays.fill(posInParent, 0);
-        List<Integer> curInParent = new ArrayList<>();
+        List<T> curInParent = new ArrayList<>();
         for (int i = 0; i < parent.size(); ++i) {
             curInParent.add(parent.get(i).elements.get(posInParent[i]).getValue());
         }
@@ -46,19 +49,19 @@ public class Entry {
         Arrays.fill(elementsInParentFinished, false);
         int nonFinishedElements = parent.size() + 1;
         while (nonFinishedElements > 0) {
-            Integer minInParent = null;
+            T minInParent = null;
             int parentWithMin = -1;
             for (int i = 0; i < parent.size(); ++i) {
                 if (elementsInParentFinished[i]) {
                     continue;
                 }
-                if (minInParent == null || curInParent.get(i) < minInParent) {
+                if (minInParent == null || comparator.compare(curInParent.get(i), minInParent) < 0) {
                     minInParent = curInParent.get(i);
                     parentWithMin = i;
                 }
             }
-            if ((!elementsFinished) && (minInParent == null || curInElements <= minInParent)) {
-                this.elements.add(new OurElement(curInElements));
+            if ((!elementsFinished) && (minInParent == null || comparator.compare(curInElements, minInParent) <= 0)) {
+                this.elements.add(new OurElement<>(curInElements));
                 posInElements++;
                 if (posInElements >= elements.size()) {
                     elementsFinished = true;
@@ -68,7 +71,7 @@ public class Entry {
                 curInElements = elements.get(posInElements);
             } else {
                 //noinspection ConstantConditions
-                this.elements.add(new AlienElement(posInParent[parentWithMin], minInParent, parentWithMin));
+                this.elements.add(new AlienElement<>(posInParent[parentWithMin], minInParent, parentWithMin));
                 posInParent[parentWithMin] += parent.get(parentWithMin).p;
                 if (posInParent[parentWithMin] >= parent.get(parentWithMin).elements.size()) {
                     elementsInParentFinished[parentWithMin] = true;
@@ -94,19 +97,19 @@ public class Entry {
         }
     }
 
-    public static Entry createCascade(List<List<Integer>> data, int p) {
+    public static <T> Entry<T> createCascade(List<List<T>> data, int p, Comparator<T> comparator) {
         if (data.size() == 0) {
             return null;
         }
-        Entry cur = new Entry(data.get(data.size() - 1), p, data.size() - 1);
+        Entry<T> cur = new Entry<>(data.get(data.size() - 1), p, data.size() - 1, comparator);
         for (int i = data.size() - 2; i >= 0; --i) {
-            cur = new Entry(data.get(i), p, Arrays.asList(cur), i);
+            cur = new Entry<>(data.get(i), p, Arrays.asList(cur), i, comparator);
         }
         return cur;
     }
 
 
-    public int posInNext(int posInCur, int x, int parentIndex) {
+    public int posInNext(int posInCur, T x, int parentIndex) {
         int posInParent;
         if (posInCur == -1) {
             posInParent = parent.get(parentIndex).elements.size();
@@ -126,14 +129,14 @@ public class Entry {
             }
         }
         for (int i = posInParent - 1; i > Math.max(-1, posInParent - parent.get(parentIndex).p); --i) {
-            if (parent.get(parentIndex).elements.get(i).getValue() >= x) {
+            if (comparator.compare(parent.get(parentIndex).elements.get(i).getValue(), x) >= 0) {
                 posInParent = i;
             }
         }
         return posInParent < parent.get(parentIndex).elements.size() ? posInParent : -1;
     }
 
-    public static Integer getRes(Entry cur, int posInParent) {
+    public T getRes(Entry<T> cur, int posInParent) {
         Element resInParent = cur.elements.get(posInParent);
         if (resInParent.isAlien()) {
             AlienElement res = (AlienElement) resInParent;
@@ -147,12 +150,12 @@ public class Entry {
         }
     }
 
-    public int binSearch(int x) {
+    public int binSearch(T x) {
         int l = -1;
         int r = elements.size();
         while (l < r - 1) {
             int m = (l + r) / 2;
-            if (elements.get(m).getValue() < x) {
+            if (comparator.compare(elements.get(m).getValue(), x) < 0) {
                 l = m;
             } else {
                 r = m;
@@ -161,9 +164,9 @@ public class Entry {
         return r;
     }
 
-    public Answer search(int x, Selector selector) {
-        Answer answer = new Answer();
-        Entry cur = this;
+    public Answer search(T x, Selector<T> selector) {
+        Answer<T> answer = new Answer<>();
+        Entry<T> cur = this;
         int curPos = binSearch(x);
         if (curPos == elements.size()) {
             answer.add(cur.index, null);
@@ -176,7 +179,7 @@ public class Entry {
             if (curPos != -1 && cur.elements.get(curPos).isAlien()) {
                 parentIndex = ((AlienElement)cur.elements.get(curPos)).getOwnerIndex();
             } else {
-                parentIndex = selector.selectNext(x, cur);
+                parentIndex = selector.selectNext(x, cur, comparator);
                 if (parentIndex == null)
                     break;
             }
