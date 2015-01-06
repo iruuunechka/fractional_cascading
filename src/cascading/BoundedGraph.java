@@ -1,13 +1,24 @@
+package cascading;
+
+import cascading.selector.Selector;
+
 import java.util.*;
 
 /**
+ * Class for a graph with bounds
  * @author Irene Petrova
  */
 public class BoundedGraph {
-    private List<Map<Integer, Edge>> rightOrder;
-    private List<Map<Integer, Edge>> inversedOrder;
-    private List<List<Integer>> values;
+    private List<Map<Integer, Edge>> rightOrder;  //прямые ребра
+    private List<Map<Integer, Edge>> inversedOrder;   //инвертированные ребра
+    private List<List<Integer>> values;   //списки значений
 
+    /**
+     * Constructor for {@link cascading.BoundedGraph}
+     * @param values -- lists of values in vertices
+     * @param edges -- edges of the graph
+     * @param bounds -- bounds for edges
+     */
     public BoundedGraph(List<List<Integer>> values, List<List<Integer>> edges, List<List<Integer>> bounds) {
         if (edges.size() != bounds.size()) {
             throw new AssertionError("Sizes of edges and bound must be equal");
@@ -30,6 +41,18 @@ public class BoundedGraph {
         }
     }
 
+    public Edge getInversedEdge(int curIndex, int curParentIndex) {
+        return inversedOrder.get(curIndex).get(curParentIndex);
+    }
+
+    public Edge getEdge(int curIndex, int parentIndex) {
+        return rightOrder.get(curIndex).get(parentIndex);
+    }
+
+    private int getP(int u) {
+        return inversedOrder.get(u).size() * 2;
+    }
+
     private void dfs(int u, boolean[] colored, Entry[] cascade) {
         colored[u] = true;
         for (Edge e : rightOrder.get(u).values()) {
@@ -49,10 +72,6 @@ public class BoundedGraph {
 
     }
 
-    private int getP(int u) {
-        return inversedOrder.get(u).size() * 2;
-    }
-
     public Entry[] createCascade() {
         boolean[] colored = new boolean[values.size()];
         Arrays.fill(colored, false);
@@ -66,18 +85,8 @@ public class BoundedGraph {
         return cascade;
     }
 
-    public Edge getInversedEdge(int curIndex, int curParentIndex) {
-        return inversedOrder.get(curIndex).get(curParentIndex);
-    }
-
-    public Edge getEdge(int curIndex, int parentIndex) {
-        return rightOrder.get(curIndex).get(parentIndex);
-    }
-
     public Answer search(int x, int start, Entry[] cascade, Selector selector) {
         Entry startEntry = cascade[start];
         return startEntry.search(x, selector);
     }
-
-
 }

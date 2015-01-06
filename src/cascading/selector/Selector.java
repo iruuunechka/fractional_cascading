@@ -1,4 +1,9 @@
+package cascading.selector;
+
+import cascading.Entry;
+
 /**
+ * Interface of selector for the next list (necessary for graphs)
  * @author Irene Petrova
  */
 public interface Selector {

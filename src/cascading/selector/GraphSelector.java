@@ -1,4 +1,11 @@
+package cascading.selector;
+
+import cascading.Edge;
+import cascading.Entry;
+import cascading.BoundedGraph;
+
 /**
+ * Selector for graph with bounds
  * @author Irene Petrova
  */
 public class GraphSelector implements Selector {

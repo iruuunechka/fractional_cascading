@@ -1,11 +1,10 @@
+package cascading.element;
+
 /**
+ * Class for element from this list
  * @author Irene Petrova
  */
 public class OurElement implements Element {
-    public void setNextAlienPos(int[] nextAlienPos) {
-        this.nextAlienPos = nextAlienPos;
-    }
-
     private int[] nextAlienPos; //позиция следующего чужого элемента
     private int value;
 
@@ -26,4 +25,9 @@ public class OurElement implements Element {
     public int[] getNextAlienPos() {
         return nextAlienPos;
     }
+
+    public void setNextAlienPos(int[] nextAlienPos) {
+        this.nextAlienPos = nextAlienPos;
+    }
+
 }

@@ -1,4 +1,9 @@
+package cascading.selector;
+
+import cascading.Entry;
+
 /**
+ * Selector for lists
  * @author Irene Petrova
  */
 public class ListSelector implements Selector {

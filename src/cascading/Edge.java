@@ -1,4 +1,7 @@
+package cascading;
+
 /**
+ * Class for edge of the graph with bounds
  * @author Irene Petrova
  */
 public class Edge {

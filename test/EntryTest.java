@@ -1,5 +1,10 @@
+import cascading.Entry;
+import cascading.selector.GraphSelector;
 import org.junit.Ignore;
 import org.junit.Test;
+import cascading.BoundedGraph;
+import cascading.selector.ListSelector;
+import cascading.selector.Selector;
 
 import java.util.Arrays;
 import java.util.List;

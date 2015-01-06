@@ -1,13 +1,21 @@
+package cascading;
+
+import cascading.element.AlienElement;
+import cascading.element.Element;
+import cascading.element.OurElement;
+import cascading.selector.Selector;
+
 import java.util.*;
 
 /**
+ * Class for cascading entry
  * @author Irene Petrova
  */
 public class Entry {
-    public List<Element> elements;
-    public List<Entry> parent;
+    public List<Element> elements; //список элементов
+    public List<Entry> parent;  //список тех, откуда каскадировали, для списков их всегда 1 (Это те, откуда попадали чужие элементы)
     private int p; //добавляется каждый p-й чужой элемент в список
-    public final int index;
+    public final int index; //номер вершины, соответствующий данному Entry
 
     //для последнего списка, в который не добавляется чужих
     public Entry(List<Integer> elements, int p, int index) {
@@ -182,6 +190,4 @@ public class Entry {
         }
         return answer;
     }
-
-
 }
